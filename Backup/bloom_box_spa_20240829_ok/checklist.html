@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Bloom Box SPA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .checklist-section, .console-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .checklist-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .checklist-item h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .checklist-item p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status.pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .status.success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status.error {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .console-output {
+            background-color: #2c3e50;
+            color: #00ff9d;
+            padding: 15px;
+            border-radius: 6px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .timer {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Checklist de Verificación Bloom Box SPA</h1>
+    
+    <div class="timer">Tiempo estimado: <span id="time">02:00</span></div>
+    
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+    
+    <div class="container">
+        <div class="checklist-section">
+            <h2>Pasos de Verificación</h2>
+            
+            <div class="checklist-item" id="step1">
+                <h3>Paso 1: Abrir consola del navegador</h3>
+                <p>Presiona F12 → Ve a las pestañas Network/Red y Console</p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(1)">Marcar como completado</button>
+            </div>
+            
+            <div class="checklist-item" id="step2">
+                <h3>Paso 2: Verificar CSRF</h3>
+                <p>Carga la home y verifica que registro.php?action=csrf responde 200 con {"csrf": "..."}</p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(2)">Marcar como completado</button>
+            </div>
+            
+            <div class="checklist-item" id="step3">
+                <h3>Paso 3: Verificar registro</h3>
+                <p>Haz el registro: el POST a registro.php debe devolver {"ok": true, "participant_id": N}</p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(3)">Marcar como completado</button>
+            </div>
+            
+            <div class="checklist-item" id="step4">
+                <h3>Paso 4: Solucionar errores 419/403</h3>
+                <p>Si devuelve 419/403 → es CSRF o cookie de sesión. Revisa que estás bajo https://TU-DOMINIO/bloom_box_spa/...</p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(4)">Marcar como completado</button>
+            </div>
+            
+            <div class="checklist-item" id="step5">
+                <h3>Paso 5: Verificar juego</h3>
+                <p>Al hacer clic en una caja, revisa el POST a juego.php → debe responder {"ok": true, "prize": { ... }}</p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(5)">Marcar como completado</button>
+            </div>
+            
+            <div class="checklist-item" id="step6">
+                <h3>Paso 6: Verificar base de datos</h3>
+                <p>Verifica en MySQL:
+                    <br>SELECT COUNT(*) FROM participantes;
+                    <br>SELECT COUNT(*) FROM ganadores;
+                    <br>SELECT * FROM ganadores ORDER BY id DESC LIMIT 5;
+                </p>
+                <span class="status pending">Pendiente</span>
+                <button class="btn" onclick="markStep(6)">Marcar como completado</button>
+            </div>
+        </div>
+        
+        <div class="console-section">
+            <h2>Consola de Simulación</h2>
+            <div class="console-output" id="consoleOutput">[Sistema] Iniciando checklist de verificación...
+[Sistema] Para comenzar, abre la consola de tu navegador (F12).</div>
+        </div>
+    </div>
+
+    <script>
+        const totalSteps = 6;
+        let completedSteps = 0;
+        let timeLeft = 120; // 2 minutos en segundos
+        const timerElement = document.getElementById('time');
+        const progressElement = document.getElementById('progress');
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        // Iniciar temporizador
+        const timer = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                consoleOutput.textContent += '\n[Sistema] ¡Tiempo completado! Revisa los pasos pendientes.';
+            }
+        }, 1000);
+        
+        // Función para marcar un paso como completado
+        function markStep(stepNumber) {
+            const stepElement = document.getElementById(`step${stepNumber}`);
+            const statusElement = stepElement.querySelector('.status');
+            const buttonElement = stepElement.querySelector('.btn');
+            
+            if (statusElement.classList.contains('pending')) {
+                statusElement.textContent = 'Completado';
+                statusElement.classList.remove('pending');
+                statusElement.classList.add('success');
+                buttonElement.style.display = 'none';
+                completedSteps++;
+                
+                // Actualizar barra de progreso
+                progressElement.style.width = `${(completedSteps / totalSteps) * 100}%`;
+                
+                // Agregar mensaje a la consola
+                consoleOutput.textContent += `\n[Paso ${stepNumber}] Completado - ${new Date().toLocaleTimeString()}`;
+                
+                // Mensajes específicos para cada paso
+                switch(stepNumber) {
+                    case 1:
+                        consoleOutput.textContent += '\n[Consola] Ahora puedes ver las solicitudes de red y los mensajes de consola.';
+                        break;
+                    case 2:
+                        consoleOutput.textContent += '\n[CSRF] Verificando token CSRF...';
+                        consoleOutput.textContent += '\n[CSRF] Respuesta recibida: 200 OK con {"csrf": "a1b2c3d4e5f6"}';
+                        break;
+                    case 3:
+                        consoleOutput.textContent += '\n[Registro] Enviando solicitud POST a registro.php...';
+                        consoleOutput.textContent += '\n[Registro] Respuesta recibida: {"ok": true, "participant_id": 12345}';
+                        break;
+                    case 4:
+                        consoleOutput.textContent += '\n[Error] Si recibes 419/403, verifica:';
+                        consoleOutput.textContent += '\n[Error] 1. El token CSRF es válido y se incluye en la solicitud';
+                        consoleOutput.textContent += '\n[Error] 2. Las cookies de sesión se envían correctamente';
+                        consoleOutput.textContent += '\n[Error] 3. Estás usando el dominio correcto (https://TU-DOMINIO/bloom_box_spa/)';
+                        break;
+                    case 5:
+                        consoleOutput.textContent += '\n[Juego] Haciendo clic en una caja...';
+                        consoleOutput.textContent += '\n[Juego] POST a juego.php respondió: {"ok": true, "prize": {"id": 1, "name": "Premio Ejemplo"}}';
+                        break;
+                    case 6:
+                        consoleOutput.textContent += '\n[MySQL] Resultados de consulta simulada:';
+                        consoleOutput.textContent += '\n[MySQL] SELECT COUNT(*) FROM participantes; → 1542';
+                        consoleOutput.textContent += '\n[MySQL] SELECT COUNT(*) FROM ganadores; → 42';
+                        consoleOutput.textContent += '\n[MySQL] Últimos 5 ganadores: IDs 100, 99, 98, 97, 96';
+                        break;
+                }
+                
+                // Desplazar hacia abajo para mostrar el último mensaje
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                
+                // Si todos los pasos están completos
+                if (completedSteps === totalSteps) {
+                    consoleOutput.textContent += '\n[Sistema] ¡Todos los pasos completados! El sistema parece estar funcionando correctamente.';
+                    clearInterval(timer);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

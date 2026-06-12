@@ -1,0 +1,28 @@
+# Configuración sensible
+.env
+includes/db.php
+
+# Certificados / llaves
+certs/
+*.pem
+*.key
+*.crt
+*.pfx
+
+# Backups / exports
+*.sql
+*.zip
+*.rar
+*.bak
+*.log
+
+# Temporales
+tmp/
+temp/
+cache/
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

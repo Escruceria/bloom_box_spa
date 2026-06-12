@@ -1,0 +1,148 @@
+# Bloom Box Spa - .htaccess (Apache 2.4+)
+
+# --------------------------------------------
+# 0) Rewriting base
+# --------------------------------------------
+RewriteEngine On
+RewriteBase /
+
+# --------------------------------------------
+# 1) Excepción ACME (Let's Encrypt)
+# --------------------------------------------
+# NUNCA reescribir ni redirigir el desafío de Let's Encrypt
+RewriteRule ^\.well-known/acme-challenge/ - [L]
+
+# --------------------------------------------
+# 2) Forzar HTTPS (pero NO para ACME)
+# --------------------------------------------
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/ [NC]
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# --------------------------------------------
+# 3) Canonical host (DuckDNS no usa www)
+# --------------------------------------------
+RewriteCond %{HTTP_HOST} ^www\.bloomboxspa\.duckdns\.org$ [NC]
+RewriteRule ^ https://bloomboxspa.duckdns.org%{REQUEST_URI} [L,R=301]
+
+# --------------------------------------------
+# 4) NO reescribir si el recurso existe
+#    (esto evita que CSS/JS/imagenes o PHP reales acaben en index.php)
+# --------------------------------------------
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# --------------------------------------------
+# 5) Admin passthrough
+#    /admin -> admin/index.php y todo lo demás queda dentro de /admin/
+# --------------------------------------------
+RewriteRule ^admin/?$ admin/index.php [L]
+RewriteRule ^admin/(.*)$ admin/$1 [L]
+
+# --------------------------------------------
+# 6) URLs “amigables” para la parte pública
+# --------------------------------------------
+RewriteRule ^inicio$ index.php [L]
+RewriteRule ^home$ index.php [L]
+RewriteRule ^sorteo$ index.php#giveaway [L]
+RewriteRule ^participar$ index.php#giveaway [L]
+RewriteRule ^registro$ index.php#giveaway [L]
+RewriteRule ^ganadores$ index.php#winners [L]
+RewriteRule ^premiados$ index.php#winners [L]
+RewriteRule ^servicios$ index.php#services [L]
+RewriteRule ^tratamientos$ index.php#services [L]
+RewriteRule ^contacto$ index.php#contact [L]
+RewriteRule ^contactanos$ index.php#contact [L]
+RewriteRule ^juego$ juego.php [L]
+RewriteRule ^descubre-tu-premio$ juego.php [L]
+
+# --------------------------------------------
+# 7) Seguridad básica
+# --------------------------------------------
+# Endpoints PHP que no deben ser reescritos
+RewriteRule ^registro\.php$ - [L]
+RewriteRule ^juego\.php$ - [L]
+
+# Proteger archivos sensibles
+<FilesMatch "^(\.env|\.ht|composer\.(json|lock)|package\.json|.*\.(bak|config|sql|inc|conf|log|tpl|twig|md|lock|sh|phar|ya?ml|dist))$">
+  Require all denied
+</FilesMatch>
+
+ServerSignature Off
+Options -Indexes
+
+# Bloquear acceso directo a /includes desde web
+RewriteRule ^includes/ - [F,L]
+
+# --------------------------------------------
+# 8) Cabeceras de seguridad (ajusta CSP a tus CDNs reales)
+# --------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header set Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; frame-ancestors 'self';"
+</IfModule>
+
+# --------------------------------------------
+# 9) Anti-hotlink (dominio correcto + dev/local/IP pública)
+# --------------------------------------------
+RewriteCond %{HTTP_REFERER} !^$ 
+RewriteCond %{HTTP_REFERER} !^https?://(www\.)?bloomboxspa\.duckdns\.org [NC]
+RewriteCond %{HTTP_REFERER} !^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?/ [NC]
+RewriteCond %{HTTP_REFERER} !^https?://181\.204\.79\.146(:[0-9]+)?/ [NC]
+RewriteRule \.(jpe?g|png|gif|ico|svg|webp|css|js)$ - [F,L]
+
+# --------------------------------------------
+# 10) Compresión y caché
+# --------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml \
+    application/xhtml+xml application/rss+xml application/javascript application/x-javascript \
+    application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/gif "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/html "access plus 600 seconds"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 0 seconds"
+  ExpiresByType text/xml "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|gif|ico|svg|webp)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+  <FilesMatch "\.(html?)$">
+    Header set Cache-Control "max-age=600, private, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(php)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# --------------------------------------------
+# 11) Errores
+# --------------------------------------------
+ErrorDocument 404 /errors/404.html

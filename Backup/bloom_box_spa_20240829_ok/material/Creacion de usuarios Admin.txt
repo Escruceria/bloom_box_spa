@@ -1,0 +1,36 @@
+-- 1) Asegura la tabla (si no existe)
+CREATE TABLE IF NOT EXISTS sec_users (
+  login       VARCHAR(64)  NOT NULL,
+  pswd        VARCHAR(255) NOT NULL,
+  active      ENUM('Y','N') NOT NULL DEFAULT 'Y',
+  priv_admin  ENUM('Y','N') NOT NULL DEFAULT 'N',
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (login)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2) Por si faltaran columnas (MySQL 8+ admite IF NOT EXISTS)
+ALTER TABLE sec_users
+  ADD COLUMN IF NOT EXISTS active     ENUM('Y','N') NOT NULL DEFAULT 'Y' AFTER pswd,
+  ADD COLUMN IF NOT EXISTS priv_admin ENUM('Y','N') NOT NULL DEFAULT 'N' AFTER active;
+
+-- 3) Crea dos usuarios admin (contraseñas provisionales)
+--    Se guardan en MD5 para que tu login los "auto-actualice" a bcrypt al primer acceso.
+INSERT INTO sec_users (login, pswd, active, priv_admin) VALUES
+ ('admin',   MD5('Nata1594*'), 'Y', 'Y'),
+ ('soporte', MD5('Wbet679*'),    'Y', 'Y')
+ON DUPLICATE KEY UPDATE
+  pswd = VALUES(pswd),
+  active = VALUES(active),
+  priv_admin = VALUES(priv_admin);
+
+-- 4) Verifica
+SELECT login, active, priv_admin FROM sec_users;
+
+Nota: Tu admin/login.php ya está preparado para detectar MD5 y migrarlo a bcrypt automáticamente cuando el usuario inicia sesión correctamente. 
+Así que con lo de arriba puedes entrar ya y la contraseña quedará actualizada de forma segura tras ese primer login.
+
+Para cambiar una clave rápido más adelante (y que vuelva a auto-migrar a bcrypt):
+
+UPDATE sec_users SET pswd = MD5('Nata1594*') WHERE login='admin';
+
+

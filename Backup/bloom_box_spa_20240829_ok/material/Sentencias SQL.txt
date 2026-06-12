@@ -1,0 +1,30 @@
+-- 0) HAZ BACKUP antes :)
+-- 1) Desactiva FKs para poder truncar en cualquier orden
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 2) TRUNCATE reinicia AUTO_INCREMENT a 1 automáticamente
+TRUNCATE TABLE ganadores;
+TRUNCATE TABLE intentos;
+TRUNCATE TABLE participantes;
+
+-- (opcional) si quieres limpiar clientes y rate limits:
+TRUNCATE TABLE clientes;
+TRUNCATE TABLE rate_limits;
+
+-- (opcional) si también quieres reiniciar premios (¡BORRA los premios!):
+-- TRUNCATE TABLE premios;
+
+-- 3) Por si la GUI no resetea, fuerza el valor (normalmente innecesario tras TRUNCATE)
+ALTER TABLE participantes AUTO_INCREMENT = 1;
+ALTER TABLE intentos       AUTO_INCREMENT = 1;
+ALTER TABLE ganadores      AUTO_INCREMENT = 1;
+ALTER TABLE clientes      AUTO_INCREMENT = 1;
+ALTER TABLE rate_limits      AUTO_INCREMENT = 1;
+-- (opcional) ALTER TABLE premios AUTO_INCREMENT = 1;
+
+-- 4) Reactiva FKs
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+

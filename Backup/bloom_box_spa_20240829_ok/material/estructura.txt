@@ -1,0 +1,32 @@
+/bloom_box_spa
+├── /admin
+│   └── exportar_ganadores.php	# Exportar los ganadores
+│   └── ganadores.php			# Gestión de ganadores
+│   └── index.php           	# Panel de administración
+│   └── login.php	         	# Gestión de premios
+│   └── logout.php
+│   └── participantes.php   	# Gestión de participantes
+│   └── premios.php       		# Gestión de premios
+├── /bd
+│   └── bloom_box_spa.sql      # Script de la base de datos
+├── /css
+│   └── style.css           	# Todos los estilos de la aplicación
+├── /errors
+│   └── 404.html           	# Cargue de los errores de pagina personalizados
+├── /images
+│   └── logo.png            	# Logo de Bloom Box Spa
+│   └── background.jpg      	# Imagen de fondo para el hero
+│   └── tratamiento1.jpg    	# Imágenes de tratamientos
+│   └── tratamiento2.jpg		# Imágenes de tratamientos
+│   └── caja.png            	# Imagen para las cajas del juego
+├── /includes
+│   └── db.php              	# Conexión a la base de datos
+│   └── functions.php       	# Funciones auxiliares
+├── /js
+│   └── script.js           	# Funcionalidades JavaScript
+│   └── confetti.js         	# Biblioteca de efectos de confeti (opcional)
+├── index.php               	# Página principal
+├── registro.php            	# Procesamiento de registros
+├── juego.php               	# Lógica del juego de selección
+├── ganadores.php           	# Lista de ganadores
+└── .htaccess               	# Configuración del servidor

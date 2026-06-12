@@ -1,0 +1,165 @@
+# Bloom Box Spa - .htaccess (Apache 2.4+)
+
+# 1) Rewriting
+RewriteEngine On
+
+# Zona horaria (si tu hosting lo permite)
+SetEnv TZ America/Bogota
+
+# Forzar HTTPS (respeta X-Forwarded-Proto detrás de proxy)
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# (Opcional) Unificar www / non-www — reemplaza TU-DOMINIO.COM
+# --- Opción A: www -> non-www
+RewriteCond %{HTTP_HOST} ^www\.TU-DOMINIO\.COM$ [NC]
+RewriteRule ^ https://TU-DOMINIO.COM%{REQUEST_URI} [L,R=301]
+# --- Opción B: non-www -> www
+# RewriteCond %{HTTP_HOST} ^TU-DOMINIO\.COM$ [NC]
+# RewriteRule ^ https://www.TU-DOMINIO.COM%{REQUEST_URI} [L,R=301]
+
+# URLs “amigables” (ajústalas a gusto)
+RewriteRule ^inicio$ index.php [L]
+RewriteRule ^home$ index.php [L]
+RewriteRule ^sorteo$ index.php#giveaway [L]
+RewriteRule ^participar$ index.php#giveaway [L]
+RewriteRule ^registro$ index.php#giveaway [L]
+RewriteRule ^ganadores$ index.php#winners [L]
+RewriteRule ^premiados$ index.php#winners [L]
+RewriteRule ^servicios$ index.php#services [L]
+RewriteRule ^tratamientos$ index.php#services [L]
+RewriteRule ^contacto$ index.php#contact [L]
+RewriteRule ^contactanos$ index.php#contact [L]
+RewriteRule ^juego$ juego.php [L]
+RewriteRule ^descubre-tu-premio$ juego.php [L]
+RewriteRule ^admin/?$ admin/index.php [L]
+RewriteRule ^administracion/?$ admin/index.php [L]
+
+# 2) Seguridad básica
+
+# Permitir estos endpoints sin reescrituras ni bloqueos, Whitelist de endpoints API
+RewriteRule ^registro\.php$ - [L]
+RewriteRule ^juego\.php$ - [L]
+
+# Proteger dotfiles y archivos sensibles
+<FilesMatch "^(\.env|\.ht|composer\.(json|lock)|package\.json|.*\.(bak|config|sql|inc|conf|log|tpl|twig|md|lock|sh|phar|ya?ml|dist))$">
+  Require all denied
+</FilesMatch>
+
+# Ocultar firma del servidor
+ServerSignature Off
+
+# No listar directorios
+Options -Indexes
+
+# Bloquear acceso directo a /includes (usar Rewrite porque <Directory> no se permite en .htaccess)
+RewriteRule ^includes/ - [F,L]
+
+# 3) Cabeceras de seguridad (si tu hosting permite mod_headers)
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # HSTS SOLO si vas a mantener HTTPS siempre (y tras verificar subdominios)
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+  # Content Security Policy (ajústala si agregas otros CDNs o iframes)
+  # Nota: Si tienes recursos HTTP externos, usa 'upgrade-insecure-requests' o migra a HTTPS.
+  Header set Content-Security-Policy "default-src 'self'; connect-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; frame-ancestors 'self';"
+</IfModule>
+
+# 4) Anti-hotlink (SOLO imágenes). Reemplaza TU-DOMINIO.COM y agrega dev locales.
+RewriteCond %{HTTP_REFERER} !^$ 
+RewriteCond %{HTTP_REFERER} !^https?://([^.]+\.)?TU-DOMINIO\.COM [NC]
+RewriteCond %{HTTP_REFERER} !^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?/ [NC]
+RewriteRule \.(jpe?g|png|gif|ico|svg|webp)$ - [F,L]
+
+# 5) Compresión (mod_deflate) y caché (mod_expires)
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml \
+    application/xhtml+xml application/rss+xml application/javascript application/x-javascript \
+    application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # Imágenes
+  ExpiresByType image/jpg "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/gif "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 year"
+  # CSS / JS
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  # Fuentes
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  # HTML
+  ExpiresByType text/html "access plus 600 seconds"
+  # Datos
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 0 seconds"
+  ExpiresByType text/xml "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|gif|ico|svg|webp)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+  <FilesMatch "\.(html?)$">
+    Header set Cache-Control "max-age=600, private, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(php)$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# 6) Bloqueos selectivos (cuidado con falsos positivos)
+# Bloquear métodos peligrosos
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DELETE)$ [NC]
+RewriteRule ^ - [F,L]
+
+# (Opcional) Filtro básico de querystring — puede dar falsos positivos. Úsalo sólo si lo necesitas:
+# RewriteCond %{QUERY_STRING} "(?:;|<|>|'|\"|\)|%0A|%0D|%22|%27|%3C|%3E|%00).*(?:/\*|union|select|insert|drop|delete|update|cast|create|alter|declare|script|eval|exec)" [NC]
+# RewriteRule ^ - [F,L]
+
+# 7) Páginas de error
+ErrorDocument 404 /errors/404.html
+# Si creas estos archivos, descomenta:
+# ErrorDocument 400 /errors/400.html
+# ErrorDocument 401 /errors/401.html
+# ErrorDocument 403 /errors/403.html
+# ErrorDocument 500 /errors/500.html
+
+# 8) Idioma y charset
+DefaultLanguage es
+AddDefaultCharset UTF-8
+
+# 9) PHP (solo si el hosting permite php_value en .htaccess)
+<IfModule mod_php.c>
+  php_value upload_max_filesize 10M
+  php_value post_max_size 10M
+  php_value max_execution_time 300
+  php_value max_input_time 300
+  php_value memory_limit 128M
+  php_value session.cookie_httponly 1
+  php_value session.use_strict_mode 1
+  php_value session.cookie_samesite Strict
+  # Requiere HTTPS forzado arriba:
+  php_value session.cookie_secure 1
+</IfModule>
+
+# 10) Redirecciones legacy (ajusta o elimina)
+Redirect 301 /viejosorteo.php /sorteo

@@ -1,0 +1,138 @@
+[glo_contador] = 0;
+/*
+echo <<<JS
+<script>
+(function(){
+  if (window.lanzarAnimacionFinal) return;
+
+  window.lanzarAnimacionFinal = function() {
+    // 🎉 Confeti de colores
+    if (typeof confetti !== "undefined") {
+      confetti({
+        particleCount: 300,
+        spread: 160,
+        origin: { y: 0.6 },
+        colors: ['#ff0','#f0f','#0ff','#4caf50','#e91e63','#ff5722']
+      });
+    }
+
+    // 🎊 Serpentinas multicolor
+    for (let i = 0; i < 40; i++) {
+      let s = document.createElement("div");
+      s.style.position = "fixed";
+      s.style.width = (5 + Math.random()*10) + "px";
+      s.style.height = "2px";
+      s.style.background = "hsl(" + (Math.random()*360) + ", 100%, 50%)";
+      s.style.left = Math.random()*100 + "vw";
+      s.style.top = "-10px";
+      s.style.transform = "rotate(" + (Math.random()*360) + "deg)";
+      s.style.opacity = 0.8;
+      s.style.zIndex = 99999;
+      s.style.pointerEvents = "none"; // no bloquea clic
+      s.style.animation = "bajarSuave " + (3+Math.random()*4) + "s linear forwards";
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(), 7000);
+    }
+
+    // 🎈 Globos PNG
+    for (let i = 0; i < 20; i++) {
+      let balloon = document.createElement("img");
+      balloon.src = "https://twemoji.maxcdn.com/v/latest/72x72/1f388.png";
+      balloon.style.position = "fixed";
+      balloon.style.left = (Math.random()*100) + "vw";
+      balloon.style.bottom = "-100px";
+      balloon.style.width = (40 + Math.random()*30) + "px";
+      balloon.style.transform = "rotate(" + (Math.random()*360) + "deg)";
+      balloon.style.zIndex = 99999;
+      balloon.style.pointerEvents = "none";
+      balloon.style.animation = "subirSuave " + (6 + Math.random()*4) + "s ease-in forwards";
+      document.body.appendChild(balloon);
+      setTimeout(()=>balloon.remove(), 9000);
+    }
+
+    // CSS animaciones solo una vez
+    if (!document.getElementById("animacionesFinales")) {
+      let style = document.createElement("style");
+      style.id = "animacionesFinales";
+      style.innerHTML = `
+        @keyframes subirSuave {
+          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(-120vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes bajarSuave {
+          0% { transform: translateY(0) rotate(0deg); opacity:1; }
+          100% { transform: translateY(120vh) rotate(360deg); opacity:0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 🔊 Sonido aplausos
+    try {
+      let audio = new Audio("https://www.soundjay.com/human/applause-8.mp3");
+      audio.play();
+    } catch(e){}
+  };
+
+  // cargar confetti.js si no está
+  if (typeof confetti === "undefined") {
+    let s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js";
+    document.head.appendChild(s);
+  }
+})();
+</script>
+JS;
+*/
+
+//header('Content-Type: text/html; charset=utf-8');
+
+echo <<<JS
+<script>
+(function(){
+  if (window.lanzarAnimacionFinal) return;
+
+  window.lanzarAnimacionFinal = function() {
+    // Confeti
+    if (typeof confetti !== "undefined") {
+      confetti({ particleCount: 300, spread: 160, origin: { y: 0.6 } });
+    }
+
+    // Globos 🎈
+    for (let i = 0; i < 20; i++) {
+      let balloon = document.createElement("div");
+      balloon.innerText = "🎈";
+      balloon.style.position = "fixed";
+      balloon.style.left = (Math.random()*100) + "vw";
+      balloon.style.bottom = "-50px";
+      balloon.style.fontSize = (Math.random()*40 + 30) + "px";
+      balloon.style.animation = "subir " + (5 + Math.random()*5) + "s linear forwards";
+      balloon.style.zIndex = 99999;
+      document.body.appendChild(balloon);
+      setTimeout(()=>balloon.remove(), 8000);
+    }
+
+    // CSS animación
+    if (!document.getElementById("animacion-globos")) {
+      let style = document.createElement("style");
+      style.id = "animacion-globos";
+      style.innerHTML = "@keyframes subir { from { transform: translateY(0); opacity:1; } to { transform: translateY(-120vh); opacity:0; } }";
+      document.head.appendChild(style);
+    }
+
+    // Sonido aplausos
+    try {
+      let audio = new Audio("https://www.soundjay.com/human/applause-8.mp3");
+      audio.play();
+    } catch(e){}
+  };
+
+  // Cargar confetti si no existe
+  if (typeof confetti === "undefined") {
+    let s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js";
+    document.head.appendChild(s);
+  }
+})();
+</script>
+JS;

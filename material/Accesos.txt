@@ -1,0 +1,22 @@
+admin
+Admin123
+
+escruceria
+AjE24112016
+
+wilmar
+Wilmar123
+
+SQL
+
+-- 1. Eliminar todos los registros
+DELETE FROM participantes;
+
+-- 2. Reiniciar el contador (esta es la parte clave)
+ALTER TABLE participantes AUTO_INCREMENT = 1;
+
+-- 3. Para forzar la actualización inmediata
+OPTIMIZE TABLE participantes;
+
+-- 1. Eliminar todos los registros
+TRUNCATE TABLE participantes;

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom Box Spa - Sorteos y Tratamientos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #8a2be2; /* Violeta elegante para spa */
+            --secondary: #d891ef; /* Violeta claro */
+            --accent: #ff6b6b; /* Color de acento */
+            --dark: #4a4a4a;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #faf7fc;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), #6a11cb);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+            background: url('https://images.unsplash.com/photo-1544164352-9cf3e4c5f2eb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+            color: white;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        .hero-content {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: #7a1bd2;
+        }
+        
+        section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .services {
+            background-color: white;
+        }
+        
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .service-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .service-card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .service-card p {
+            color: var(--gray);
+        }
+        
+        .giveaway {
+            background: linear-gradient(135deg, #f5f7ff 0%, #e6e9ff 100%);
+            text-align: center;
+        }
+        
+        .giveaway-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .giveaway-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .giveaway-box p {
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+        
+        .winners {
+            background-color: white;
+        }
+        
+        .winners-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .winners-table th, .winners-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .winners-table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .winners-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .winners-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .game-section {
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0e6ff 100%);
+            padding: 5rem 0;
+            text-align: center;
+        }
+        
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .game-instructions {
+            margin-bottom: 2rem;
+            color: var(--gray);
+        }
+        
+        .boxes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .box {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .box.opened {
+            background: linear-gradient(135deg, var(--accent), #ff5252);
+            transform: scale(0.95);
+        }
+        
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result-container h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .winner-prize {
+            font-size: 1.5rem;
+            color: var(--accent);
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-section p, .footer-section li {
+            margin-bottom: 0.8rem;
+            color: #ccc;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .social-icons a {
+            display: inline-block;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #444;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            nav ul li {
+                margin: 0.5rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .boxes-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .winners-table {
+                font-size: 0.9rem;
+            }
+            
+            .winners-table th, .winners-table td {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Animaciones para el juego */
+        @keyframes subirSuave {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-120vh) rotate(720deg); opacity: 0; }
+        }
+        
+        @keyframes bajarSuave {
+            0% { transform: translateY(0) rotate(0deg); opacity:1; }
+            100% { transform: translateY(120vh) rotate(360deg); opacity:0; }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff0;
+            opacity: 0.8;
+            z-index: 9999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-spa"></i>
+                    <span>Bloom Box Spa</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#home">Inicio</a></li>
+                        <li><a href="#services">Servicios</a></li>
+                        <li><a href="#giveaway">Sorteo</a></li>
+                        <li><a href="#winners">Ganadores</a></li>
+                        <li><a href="#contact">Contacto</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Bloom Box Spa</h1>
+                <p>Descubre nuestros tratamientos exclusivos y participa en increíbles sorteos para vivir una experiencia de bienestar única.</p>
+                <a href="#giveaway" class="btn">Participar en Sorteo</a>
+                <a href="#services" class="btn btn-primary">Nuestros Servicios</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Nuestros Tratamientos</h2>
+                <p>Descubre nuestra amplia gama de tratamientos de spa diseñados para tu bienestar y relajación.</p>
+            </div>
+            <div class="service-grid">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <h3>Masaje Relajante</h3>
+                    <p>Un masaje suave que alivia la tensión muscular y promueve la relajación profunda.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-face-smile"></i>
+                    </div>
+                    <h3>Limpieza Facial Profunda</h3>
+                    <p>Tratamiento que rejuvenece y revitaliza tu piel, eliminando impurezas.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-syringe"></i>
+                    </div>
+                    <h3>Mesoterapia</h3>
+                    <p>Tratamiento rejuvenecedor con microinyecciones de vitaminas y nutrientes.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <h3>Vitaminas Inyectadas</h3>
+                    <p>Aporte directo de vitaminas para revitalizar tu organismo y mejorar tu energía.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-hand-sparkles"></i>
+                    </div>
+                    <h3>Tratamiento de Glúteos</h3>
+                    <p>Mejora la apariencia y tonicidad de la zona con nuestros tratamientos especializados.</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Láser</h3>
+                    <p>Sesiones de láser para diversos tratamientos estéticos y de rejuvenecimiento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Giveaway Section -->
+    <section id="giveaway" class="giveaway">
+        <div class="container">
+            <div class="section-title">
+                <h2>Participa en Nuestro Sorteo</h2>
+                <p>Regístrate para tener la oportunidad de ganar tratamientos exclusivos de Bloom Box Spa.</p>
+            </div>
+            <div class="giveaway-box">
+                <h3>¡Sorteo Mensual de Tratamientos!</h3>
+                <p>Completa el formulario para participar en nuestro sorteo mensual. ¡Cada mes sorteamos tratamientos exclusivos entre nuestros participantes!</p>
+                
+                <form id="registration-form">
+                    <div class="form-group">
+                        <label for="name">Nombre Completo *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Teléfono *</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">Participar en el Sorteo</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Section -->
+    <section id="game" class="game-section" style="display: none;">
+        <div class="container">
+            <div class="game-container">
+                <h2 class="game-title">¡Bienvenido a Bloom Box Spa!</h2>
+                <p class="game-instructions">Da clic sobre el número que identifica cada una de las cajas y descubre tu sorpresa especial. Cada una guarda un tratamiento único pensado para ti.</p>
+                
+                <div class="boxes-grid">
+                    <div class="box" data-id="1">1</div>
+                    <div class="box" data-id="2">2</div>
+                    <div class="box" data-id="3">3</div>
+                    <div class="box" data-id="4">4</div>
+                    <div class="box" data-id="5">5</div>
+                    <div class="box" data-id="6">6</div>
+                    <div class="box" data-id="7">7</div>
+                    <div class="box" data-id="8">8</div>
+                    <div class="box" data-id="9">9</div>
+                    <div class="box" data-id="10">10</div>
+                    <div class="box" data-id="11">11</div>
+                    <div class="box" data-id="12">12</div>
+                </div>
+                
+                <div class="result-container" id="result-container">
+                    <h3>¡Felicidades!</h3>
+                    <p>Has desbloqueado tu premio especial de <strong>Bloom Spa</strong>:</p>
+                    <div class="winner-prize" id="prize-name"></div>
+                    <p>Nos pondremos en contacto contigo para coordinar tu tratamiento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Winners Section -->
+    <section id="winners" class="winners">
+        <div class="container">
+            <div class="section-title">
+                <h2>Últimos Ganadores</h2>
+                <p>Conoce a las personas afortunadas que han ganado nuestros tratamientos exclusivos.</p>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="winners-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Teléfono</th>
+                            <th>Premio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>18/08/2025 20:02:31</td>
+                            <td>Natalia Betancur</td>
+                            <td>nataloc64@hotmail.com</td>
+                            <td>3148944595</td>
+                            <td>Masaje relajante</td>
+                        </tr>
+                        <tr>
+                            <td>18/08/2025 20:03:56</td>
+                            <td>Patricia Morales Ortiz</td>
+                            <td>palico.67@hotmail.com</td>
+                            <td>3116302428</td>
+                            <td>Limpieza facial profunda</td>
+                        </tr>
+                        <tr>
+                            <td>18/08/2025 20:14:12</td>
+                            <td>Amparo Morales</td>
+                            <td>maamparo66@gmail.com</td>
+                            <td>3148944679</td>
+                            <td>Masaje relajante</td>
+                        </tr>
+                        <tr>
+                            <td>18/08/2025 20:16:02</td>
+                            <td>Neffer Anais Martinez</td>
+                            <td>nefferanaio05@hotmail.com</td>
+                            <td>3148944676</td>
+                            <td>Limpieza facial profunda</td>
+                        </tr>
+                        <tr>
+                            <td>18/08/2025 20:17:37</td>
+                            <td>Marta Vargas</td>
+                            <td>martavargas60@gmail.com</td>
+                            <td>3148944678</td>
+                            <td>Limpieza facial profunda</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Acerca de Bloom Box Spa</h3>
+                    <p>Ofrecemos tratamientos de bienestar y sorteos emocionantes para nuestros clientes, brindando experiencias únicas de relax y rejuvenecimiento.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contáctanos</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Calle Principal 123, Ciudad</p>
+                    <p><i class="fas fa-phone"></i> +57 123 456 7890</p>
+                    <p><i class="fas fa-envelope"></i> info@bloamboxspa.com</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Enlaces Rápidos</h3>
+                    <ul>
+                        <li><a href="#home">Inicio</a></li>
+                        <li><a href="#services">Servicios</a></li>
+                        <li><a href="#giveaway">Sorteo</a></li>
+                        <li><a href="#winners">Ganadores</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Síguenos</h3>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 Bloom Box Spa. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for messages -->
+    <div class="modal" id="message-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <div id="modal-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de premios (simulando tu base de datos)
+        const prizes = [
+            { id: 1, name: "Masaje relajante" },
+            { id: 2, name: "Limpieza facial profunda" },
+            { id: 3, name: "Mesoterapia" },
+            { id: 4, name: "Vitaminas inyectadas" },
+            { id: 5, name: "Tratamiento de glúteos" },
+            { id: 6, name: "3 sesiones de láser" },
+            { id: 7, name: "Masaje relajante" },
+            { id: 8, name: "Limpieza facial profunda" },
+            { id: 9, name: "Mesoterapia" },
+            { id: 10, name: "Vitaminas inyectadas" },
+            { id: 11, name: "Tratamiento de glúteos" },
+            { id: 12, name: "3 sesiones de láser" }
+        ];
+
+        // Variables globales para simular el sistema ScriptCase
+        const glo_nombre = "";
+        const glo_email = "";
+        const glo_telefono = "";
+
+        // Formulario de registro
+        document.getElementById('registration-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            
+            // Validaciones básicas (simulando tu código PHP)
+            if (!name || !email || !phone) {
+                showModal("Todos los campos son obligatorios.");
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showModal("Por favor, ingresa un email válido.");
+                return;
+            }
+            
+            if (phone.length < 7) {
+                showModal("Por favor, ingresa un número de teléfono válido.");
+                return;
+            }
+            
+            // Simular verificación de participante existente
+            const existingParticipants = [
+                { email: "nataloc64@hotmail.com", phone: "3148944595" },
+                { email: "palico.67@hotmail.com", phone: "3116302428" },
+                { email: "maamparo66@gmail.com", phone: "3148944679" }
+            ];
+            
+            const isExisting = existingParticipants.some(participant => 
+                participant.email === email || participant.phone === phone
+            );
+            
+            if (isExisting) {
+                showModal("Ya participaste en nuestro sorteo. ¡Mucha suerte en la próxima!");
+                return;
+            }
+            
+            // Simular registro exitoso
+            showModal("¡Registro exitoso! Ahora puedes participar en el juego para ganar tu premio.");
+            
+            // Guardar datos globales (simulando ScriptCase)
+            glo_nombre = name;
+            glo_email = email;
+            glo_telefono = phone;
+            
+            // Mostrar sección de juego
+            document.getElementById('game').style.display = 'block';
+            
+            // Scroll to game section
+            setTimeout(() => {
+                document.getElementById('game').scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
+        });
+
+        // Juego de cajas
+        document.querySelectorAll('.box').forEach(box => {
+            box.addEventListener('click', function() {
+                const boxId = this.getAttribute('data-id');
+                this.classList.add('opened');
+                
+                // Deshabilitar todas las cajas después de hacer clic
+                document.querySelectorAll('.box').forEach(b => {
+                    b.style.pointerEvents = 'none';
+                });
+                
+                // Simular la selección de premio (como en tu código PHP)
+                setTimeout(() => {
+                    const prize = prizes.find(p => p.id == boxId);
+                    
+                    if (prize) {
+                        document.getElementById('prize-name').textContent = prize.name;
+                        document.getElementById('result-container').style.display = 'block';
+                        
+                        // Lanzar animación de celebración
+                        lanzarAnimacionFinal();
+                        
+                        // Scroll to results
+                        setTimeout(() => {
+                            document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
+                        }, 500);
+                    }
+                }, 1000);
+            });
+        });
+
+        // Funciones de utilidad
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        function showModal(message) {
+            document.getElementById('modal-message').innerHTML = message;
+            document.getElementById('message-modal').style.display = 'flex';
+        }
+        
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('message-modal').style.display = 'none';
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            if (event.target === document.getElementById('message-modal')) {
+                document.getElementById('message-modal').style.display = 'none';
+            }
+        });
+
+        // Animación de celebración (como en tu código)
+        function lanzarAnimacionFinal() {
+            // Confeti
+            if (typeof confetti !== "undefined") {
+                confetti({
+                    particleCount: 300,
+                    spread: 160,
+                    origin: { y: 0.6 },
+                    colors: ['#ff0', '#f0f', '#0ff', '#4caf50', '#e91e63', '#ff5722']
+                });
+            }
+
+            // Globos
+            for (let i = 0; i < 20; i++) {
+                let balloon = document.createElement("div");
+                balloon.innerText = "🎈";
+                balloon.style.position = "fixed";
+                balloon.style.left = (Math.random() * 100) + "vw";
+                balloon.style.bottom = "-50px";
+                balloon.style.fontSize = (Math.random() * 40 + 30) + "px";
+                balloon.style.animation = "subirSuave " + (5 + Math.random() * 5) + "s linear forwards";
+                balloon.style.zIndex = 9999;
+                document.body.appendChild(balloon);
+                setTimeout(() => balloon.remove(), 8000);
+            }
+
+            // Serpentinas
+            for (let i = 0; i < 40; i++) {
+                let s = document.createElement("div");
+                s.style.position = "fixed";
+                s.style.width = (5 + Math.random() * 10) + "px";
+                s.style.height = "2px";
+                s.style.background = "hsl(" + (Math.random() * 360) + ", 100%, 50%)";
+                s.style.left = Math.random() * 100 + "vw";
+                s.style.top = "-10px";
+                s.style.transform = "rotate(" + (Math.random() * 360) + "deg)";
+                s.style.opacity = 0.8;
+                s.style.zIndex = 9999;
+                s.style.pointerEvents = "none";
+                s.style.animation = "bajarSuave " + (3 + Math.random() * 4) + "s linear forwards";
+                document.body.appendChild(s);
+                setTimeout(() => s.remove(), 7000);
+            }
+
+            // Sonido de aplausos
+            try {
+                let audio = new Audio("https://www.soundjay.com/human/applause-8.mp3");
+                audio.play();
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>

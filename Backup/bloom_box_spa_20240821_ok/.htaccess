@@ -1,0 +1,298 @@
+# Bloom Box Spa - Archivo de configuración Apache .htaccess
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Establecer la zona horaria por defecto
+SetEnv TZ America/Bogota
+
+# -------------------------------------------------------------------
+# SEGURIDAD BÁSICA
+# -------------------------------------------------------------------
+
+# Proteger el archivo .htaccess
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Proteger archivos sensibles
+<FilesMatch "^(\.env|config\.php|composer\.json|composer\.lock|package\.json)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Ocultar información del servidor
+ServerSignature Off
+
+# Prevenir que se listen los directorios
+Options -Indexes
+
+# Prevenir acceso a archivos de backup y fuentes
+<FilesMatch "\.(bak|config|sql|inc|conf|log|tpl|twig|md|gitignore|gitattributes|lock|sh|phar|yml|yaml|dist)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# -------------------------------------------------------------------
+# PROTECCIÓN CONTRA ATAQUES
+# -------------------------------------------------------------------
+
+# Prevenir clickjacking
+Header always set X-Frame-Options "SAMEORIGIN"
+
+# Prevenir XSS
+Header set X-XSS-Protection "1; mode=block"
+
+# Prevenir MIME sniffing
+Header set X-Content-Type-Options "nosniff"
+
+# Política de referer
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Política de permisos
+Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+# CSP (Content Security Policy) - Ajustar según necesidades
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com;"
+
+# -------------------------------------------------------------------
+# PREVENCIÓN DE HOTLINKING
+# -------------------------------------------------------------------
+
+RewriteCond %{HTTP_REFERER} !^$ 
+RewriteCond %{HTTP_REFERER} !^https?://(www\.)?bloamboxspa\.com [NC]
+RewriteCond %{HTTP_REFERER} !^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?/ [NC]
+RewriteRule \.(jpe?g|png|gif|ico|svg|webp|css|js)$ - [F,L]
+
+# -------------------------------------------------------------------
+# COMPRESIÓN Y CACHÉ
+# -------------------------------------------------------------------
+
+# Compresión GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Headers de caché para mejorar rendimiento
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Imágenes
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/ico "access plus 1 year"
+    
+    # CSS, JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    
+    # Fuentes
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    
+    # HTML
+    ExpiresByType text/html "access plus 600 seconds"
+    
+    # Datos
+    ExpiresByType application/json "access plus 0 seconds"
+    ExpiresByType application/xml "access plus 0 seconds"
+    ExpiresByType text/xml "access plus 0 seconds"
+</IfModule>
+
+# Headers de caché para navegadores
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|ico|svg|webp)$">
+        Header set Cache-Control "max-age=2592000, public"
+    </FilesMatch>
+    
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "max-age=2592000, public"
+    </FilesMatch>
+    
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "max-age=600, private, must-revalidate"
+    </FilesMatch>
+    
+    <FilesMatch "\.(php)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+</IfModule>
+
+# -------------------------------------------------------------------
+# REWRITE RULES - URLS AMIGABLES
+# -------------------------------------------------------------------
+
+# Redireccionar a HTTPS si está disponible
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Redireccionar www a non-www o viceversa (elegir una opción)
+
+# Opción 1: Redireccionar www a non-www
+RewriteCond %{HTTP_HOST} ^www\.bloamboxspa\.com [NC]
+RewriteRule ^(.*)$ https://bloamboxspa.com/$1 [L,R=301]
+
+# Opción 2: Redireccionar non-www a www (descomentar si se prefiere)
+# RewriteCond %{HTTP_HOST} ^bloamboxspa\.com [NC]
+# RewriteRule ^(.*)$ https://www.bloamboxspa.com/$1 [L,R=301]
+
+# URLs amigables para la página principal
+RewriteRule ^inicio$ index.php [L]
+RewriteRule ^home$ index.php [L]
+
+# URLs amigables para sorteos
+RewriteRule ^sorteo$ index.php#giveaway [L]
+RewriteRule ^participar$ index.php#giveaway [L]
+RewriteRule ^registro$ index.php#giveaway [L]
+
+# URLs amigables para ganadores
+RewriteRule ^ganadores$ index.php#winners [L]
+RewriteRule ^premiados$ index.php#winners [L]
+
+# URLs amigables para servicios
+RewriteRule ^servicios$ index.php#services [L]
+RewriteRule ^tratamientos$ index.php#services [L]
+
+# URLs amigables para contacto
+RewriteRule ^contacto$ index.php#contact [L]
+RewriteRule ^contactanos$ index.php#contact [L]
+
+# URLs para el juego
+RewriteRule ^juego$ juego.php [L]
+RewriteRule ^descubre-tu-premio$ juego.php [L]
+
+# URLs para el admin (protección adicional)
+RewriteRule ^admin/?$ admin/index.php [L]
+RewriteRule ^administracion/?$ admin/index.php [L]
+
+# -------------------------------------------------------------------
+# PREVENCIÓN DE ATAQUES ESPECÍFICOS
+# -------------------------------------------------------------------
+
+# Bloquear user agents maliciosos
+RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+RewriteCond %{HTTP_USER_AGENT} ^(-|\.|') [OR]
+RewriteCond %{HTTP_USER_AGENT} ^.*(libwww-perl|curl|wget|winhttp|python|nikto|scan|clshttp|archiver|loader|email|harvest|extract|grab|miner).*$ [NC]
+RewriteRule ^(.*)$ - [F,L]
+
+# Bloquear métodos HTTP no deseados
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DELETE) [NC]
+RewriteRule ^(.*)$ - [F,L]
+
+# Prevenir inyección de código
+RewriteCond %{QUERY_STRING} (;|<|>|'|"|\)|%0A|%0D|%22|%27|%3C|%3E|%00).*(/\*|union|select|insert|drop|delete|update|cast|create|char|convert|alter|declare|order|script|iframe|javascript|alert|eval|expression|exec|execute|set|chr|md5|benchmark) [NC,OR]
+RewriteCond %{QUERY_STRING} \.\./\.\. [OR]
+RewriteCond %{QUERY_STRING} (localhost|loopback|127\.0\.0\.1) [NC,OR]
+RewriteCond %{QUERY_STRING} \.[a-z0-9] [NC,OR]
+RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} (GLOBALS|REQUEST)(=|\[|%) [NC]
+RewriteRule ^(.*)$ - [F,L]
+
+# -------------------------------------------------------------------
+# MANEJO DE ERRORES
+# -------------------------------------------------------------------
+
+# Páginas de error personalizadas
+ErrorDocument 400 /errors/400.html
+ErrorDocument 401 /errors/401.html
+ErrorDocument 403 /errors/403.html
+ErrorDocument 404 /errors/404.html
+ErrorDocument 500 /errors/500.html
+
+# Crear directorio de errores si no existe
+<IfModule !mod_authz_core.c>
+    <IfModule !mod_access_compat.c>
+        <IfModule mod_rewrite.c>
+            RewriteCond %{REQUEST_URI} ^/errors/ [NC]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^errors/(.*)$ /errors/404.html [L]
+        </IfModule>
+    </IfModule>
+</IfModule>
+
+# -------------------------------------------------------------------
+# OPTIMIZACIÓN PARA MÓVILES
+# -------------------------------------------------------------------
+
+# Detectar dispositivos móviles
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_USER_AGENT} (android|blackberry|iphone|ipod|palm|windows\s+ce) [NC]
+    RewriteRule ^$ / [L]
+</IfModule>
+
+# -------------------------------------------------------------------
+# CONFIGURACIONES ESPECÍFICAS DE PHP
+# -------------------------------------------------------------------
+
+# Ajustes de PHP si se ejecuta como módulo Apache
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 128M
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_strict_mode 1
+    php_value session.cookie_samesite Strict
+</IfModule>
+
+# -------------------------------------------------------------------
+# REDIRECCIONES ESPECÍFICAS DEL SITIO
+# -------------------------------------------------------------------
+
+# Redireccionar URLs antiguas si es necesario
+Redirect 301 /old-page.html /new-page.html
+Redirect 301 /viejosorteo.php /sorteo
+
+# -------------------------------------------------------------------
+# PROTECCIÓN CONTRA SPAM
+# -------------------------------------------------------------------
+
+# Bloquear referers de spam
+RewriteCond %{HTTP_REFERER} ^https?://([^.]+\.)*((semalt|buttons-for-website|social-buttons|blackhatworth|7makemoneyonline|ilovevitaly|simple-share-buttons)\.)+.*$ [NC]
+RewriteRule ^(.*)$ - [F,L]
+
+# -------------------------------------------------------------------
+# CONFIGURACIÓN DE IDIOMA
+# -------------------------------------------------------------------
+
+# Establecer idioma por defecto
+DefaultLanguage es
+AddDefaultCharset UTF-8
+
+# -------------------------------------------------------------------
+# SEGURIDAD ADICIONAL PARA WORDPRESS (si se usa)
+# -------------------------------------------------------------------
+
+# Proteger wp-admin y wp-login.php si se usa WordPress
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} ^(.*)?wp-login\.php(.*)$ [OR]
+    RewriteCond %{REQUEST_URI} ^(.*)?wp-admin$
+    RewriteCond %{REMOTE_ADDR} !^123\.456\.789\.000
+    RewriteRule ^(.*)$ - [R=403,L]
+</IfModule>
+
+# -------------------------------------------------------------------
+# FIN DEL ARCHIVO .HTACCESS
+# -------------------------------------------------------------------

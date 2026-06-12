@@ -1,0 +1,32 @@
+// ¿Existe ya por email o teléfono?
+sc_lookup(rs_dup, "
+  SELECT p.id,
+         p.ganador,
+         EXISTS(SELECT 1 FROM intentos i WHERE i.participante_id = p.id) AS ya_participo
+  FROM participantes p
+  WHERE p.email = '{email}' OR p.telefono = '{telefono}'
+  LIMIT 1
+");
+
+if (!empty({rs_dup})) {
+    $pid        = (int){rs_dup[0][0]};
+    $es_ganador = (int){rs_dup[0][1]};
+    $ya_part    = (int){rs_dup[0][2]};
+
+    if ($es_ganador == 1) {
+        sc_error_message("Ya fuiste ganador y no puedes volver a participar.");
+        sc_error_exit();
+    }
+    if ($ya_part == 1) {
+        sc_error_message("Ya participaste y no puedes volver a jugar.");
+        sc_error_exit();
+    }
+
+    // Existe, pero aún puede jugar → reutilizamos registro y enviamos al juego
+    [participant_id] = $pid;           // variable global de Scriptcase
+    //sc_redir("blk_juego", "", "_self");
+    exit;
+}
+
+// Fecha de registro para el nuevo
+{fecha_registro} = date("Y-m-d H:i:s");

@@ -1,0 +1,160 @@
+1) Crea el subdominio
+
+Regístrate en duckdns.org y crea bloomboxspa.
+
+DuckDNS apuntará ese nombre a tu IP pública. Si tu IP cambia, instala su updater para Windows (o programa una tarea que haga la llamada de actualización).
+
+2) 1) Verifica la resolución DNS
+
+En CMD:
+
+nslookup bloomboxspa.duckdns.org 8.8.8.8
+nslookup -type=A bloomboxspa.duckdns.org 1.1.1.1
+nslookup -type=AAAA bloomboxspa.duckdns.org 8.8.8.8
+
+Si respuesta es:
+
+Microsoft Windows [Versión 10.0.19045.6282]
+(c) Microsoft Corporation. Todos los derechos reservados.
+
+C:\Windows\system32>nslookup bloomboxspa.duckdns.org 8.8.8.8
+Servidor:  dns.google
+Address:  8.8.8.8
+
+DNS request timed out.
+    timeout was 2 seconds.
+DNS request timed out.
+    timeout was 2 seconds.
+*** Se agotó el tiempo de espera de la solicitud a dns.google
+
+C:\Windows\system32>nslookup -type=A bloomboxspa.duckdns.org 1.1.1.1
+Servidor:  one.one.one.one
+Address:  1.1.1.1
+
+DNS request timed out.
+    timeout was 2 seconds.
+Respuesta no autoritativa:
+Nombre:  bloomboxspa.duckdns.org
+Address:  181.204.79.146
+
+
+C:\Windows\system32>nslookup -type=AAAA bloomboxspa.duckdns.org 8.8.8.8
+Servidor:  dns.google
+Address:  8.8.8.8
+
+Nombre:  bloomboxspa.duckdns.org
+
+Todo salió bien
+
+2) Comprueba que tu servidor es alcanzable
+
+Aún sin HTTPS, debe responder por HTTP (80) desde fuera de tu red. En PowerShell:
+
+Test-NetConnection bloomboxspa.duckdns.org -Port 80
+Test-NetConnection bloomboxspa.duckdns.org -Port 443
+
+
+Si 80 = True, tu router y firewall están bien para el desafío de Let’s Encrypt.
+
+Si False, debes abrir/redirigir puertos:
+
+En tu router: crea “Port Forward/NAT”
+
+TCP 80 → 192.168.X.Y (IP local de tu PC con XAMPP)
+
+TCP 443 → 192.168.X.Y
+
+En Windows: permite “Apache HTTP Server” en el firewall (Entrantes 80 y 443).
+
+si tu respuesta desde afuera es:
+
+PowerShell 7.5.2
+PS C:\Users\ESCRUCERIA> Test-NetConnection bloomboxspa.duckdns.org -Port 80
+
+ComputerName     : bloomboxspa.duckdns.org
+RemoteAddress    : 181.204.79.146
+RemotePort       : 80
+InterfaceAlias   : Ethernet
+SourceAddress    : 192.168.1.21
+TcpTestSucceeded : True
+
+PS C:\Users\ESCRUCERIA> Test-NetConnection bloomboxspa.duckdns.org -Port 443
+
+ComputerName     : bloomboxspa.duckdns.org
+RemoteAddress    : 181.204.79.146
+RemotePort       : 443
+InterfaceAlias   : Ethernet
+SourceAddress    : 192.168.1.21
+TcpTestSucceeded : True
+
+Todo salió bien
+
+Ahora vamos a crear los certificados SSL
+
+Paso 1: C:\win-acme\wacs.exe
+Paso 2: M: Create certificate (full options) → Please choose from the menu: M
+Paso 3: 2 Manual input → How shall we determine the domain(s) to include in the certificate?: 2
+Paso 4: Host: → bloomboxspa.duckdns.org
+Paso 5: Source generated using plugin Manual: bloomboxspa.com www.bloomboxspa.com Friendly name '[Manual] bloomboxspa.com www.bloomboxspa.com'. <Enter> to accept or type desired name: <Enter>
+Paso 6:  Would you like to split this source into multiple certificates?: → Split certificate? → elige 4 (Single certificate).
+Paso 7: How would you like prove ownership for the domain(s)?: = → 1 [http] Save verification files on (network) path
+Paso 8: Path: C:\xampp\htdocs
+Paso 9: Copy default web.config before validation (y/n): escribe n y Enter
+Paso 10: Private key → 2 (RSA).
+Paso 11: How would you like to store the certificate?: → escribe 2 (PEM encoded files (Apache, nginx, etc.)).
+Paso 12: File path: C:\certs\bloomboxspa.com
+Paso 13: Password for private key .pem file → elige 1: None (para que Apache no pida contraseña al iniciar). = Choose from the menu: 1
+Paso 14: Would you like to store it in another way too? → responde 5 (No additional store steps). 
+Paso 15: Which installation step should run first?: → Elige 3 – No (additional) installation steps.
+
+Si todo sale bien veras:
+
+ Plugin Manual generated source bloomboxspa.duckdns.org with 1 identifiers
+ Plugin Single created 1 order
+ Cached order has status invalid, discarding
+ [bloomboxspa.duckdns.org] Authorizing...
+ [bloomboxspa.duckdns.org] Authorizing using http-01 validation (FileSystem)
+ Answer should now be browsable at http://bloomboxspa.duckdns.org/.well-known/acme-challenge/eHZzACd-GNnbLEkv3k0wZ52MUYB0fOQ-7i0yUG1IySo
+ Preliminary validation failed because 'An error occurred while sending the request.'
+ [bloomboxspa.duckdns.org] Authorization result: valid
+ Downloading certificate [Manual] bloomboxspa.duckdns.org
+ Store with PemFiles...
+ Exporting .pem files to C:\certs\bloomboxspa.com
+ Adding Task Scheduler entry with the following settings
+ - Name win-acme renew (acme-v02.api.letsencrypt.org)
+ - Path C:\win-acme
+ - Command wacs.exe --renew --baseuri "https://acme-v02.api.letsencrypt.org/"
+ - Start at 09:00:00
+ - Random delay 04:00:00
+ - Time limit 02:00:00
+
+Do you want to specify the user the task will run as? (y/n*) → escribe n y Enter
+
+Adding renewal for [Manual] bloomboxspa.duckdns.org
+ Next renewal due after 2025/10/22
+ Certificate [Manual] bloomboxspa.duckdns.org created
+
+ N: Create certificate (default settings)
+ M: Create certificate (full options)
+ R: Run renewals (0 currently due)
+ A: Manage renewals (1 total)
+ O: More options...
+ Q: Quit
+
+ Please choose from the menu: Q: Quit
+
+Problemas al ejecutar la aplicacion - Mini-checklist rápido para móviles:
+
+Limpia caché del navegador (y prueba en ventana privada).
+
+Verifica que el cookie de sesión tenga Path=/ (en includes/functions.php).
+
+Mantén en .htaccess las excepciones para /.well-known/acme-challenge/ y no reescribas archivos reales (la regla RewriteCond %{REQUEST_FILENAME} -f [OR] -d ya lo cubre).
+
+Si aparece “Error de red en el registro”, mira:
+
+apache/logs/error.log y php_error_log.
+
+La respuesta de registro.php en la pestaña Network: debe ser JSON { ok: true, participant_id: ... }.
+
+Que existan los índices únicos en participantes (email, telefono) y que no haya errores de SQL.
